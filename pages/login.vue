@@ -44,6 +44,8 @@
   import '~/assets/css/sign.css'
   import '~/assets/css/iconfont.css'
   import cookie from 'js-cookie'
+
+  import loginApi from '@/api/login'
   
   export default {
     layout: 'sign',
@@ -54,12 +56,40 @@
           mobile:'',
           password:''
         },
+        //获取用户信息
         loginInfo:{}
       }
     },
 
     methods: {
-      
+      //登录的方法
+      submitLogin(){
+        //第一步：调用接口进行登录，返回token字符串
+        loginApi.submitLoginUser(this.user)
+        .then(response=>{
+          //第二步：获取到token字符串，放到cookie中
+          cookie.set('guli_token',response.data.data.token,{domain: 'localhost'})
+          //第三步：在request.js里创建拦截器
+          //第四步：调用接口根据token获取用户信息
+          loginApi.getLoginUserInfo()
+          .then(response=>{
+            this.loginInfo=response.data.data.userInfo
+            //获取返回的用户信息
+            cookie.set('guli_ucenter',this.loginInfo,{domain: 'localhost'})
+            //跳转页面
+            window.location.href = "/"
+          })
+        })
+      },
+
+      //手机号校验
+      checkPhone (rule, value, callback) {
+        //debugger
+        if (!(/^1[34578]\d{9}$/.test(value))) {
+          return callback(new Error('手机号码格式不正确'))
+        }
+        return callback()
+      }
     }
   }
 </script>
