@@ -47,18 +47,46 @@
           </article>
         </div>
         <!-- 公共分页 开始 -->
-        <div>
-          <div class="paging">
-            <!-- undisable这个class是否存在，取决于数据属性hasPrevious -->
-            <a href="#" title="首页">首</a>
-            <a href="#" title="前一页">&lt;</a>
-            <a href="#" title="第1页" class="current undisable">1</a>
-            <a href="#" title="第2页">2</a>
-            <a href="#" title="后一页">&gt;</a>
-            <a href="#" title="末页">末</a>
-            <div class="clear"></div>
-          </div>
+        <!-- 公共分页 开始 -->
+      <div>
+        <div class="paging">
+          <!-- undisable这个class是否存在，取决于数据属性hasPrevious -->
+          <a
+            :class="{undisable: !data.hasPrevious}"
+            href="#"
+            title="首页"
+            @click.prevent="gotoPage(1)">首页</a>
+
+          <a
+            :class="{undisable: !data.hasPrevious}"
+            href="#"
+            title="前一页"
+            @click.prevent="gotoPage(data.current-1)">&lt;</a>
+
+          <a
+            v-for="page in data.pages"
+            :key="page"
+            :class="{current: data.current == page, undisable: data.current == page}"
+            :title="'第'+page+'页'"
+            href="#"
+            @click.prevent="gotoPage(page)">{{ page }}</a>
+
+          <a
+            :class="{undisable: !data.hasNext}"
+            href="#"
+            title="后一页"
+            @click.prevent="gotoPage(data.current+1)">&gt;</a>
+
+          <a
+            :class="{undisable: !data.hasNext}"
+            href="#"
+            title="末页"
+            @click.prevent="gotoPage(data.pages)">末页</a>
+
+          <div class="clear"/>
         </div>
+      </div>
+      <!-- 公共分页 结束 -->
         <!-- 公共分页 结束 -->
       </section>
     </section>
@@ -67,14 +95,26 @@
 </template>
 <script>
 import teacherApi from '@/api/teacher'
+
 export default {
-  //异步调用
-  asyncData({params,error}){
-    return teacherApi.getTeacherList(1,8)
-    .then(response=>{
-      //response.data.data
-      return {data:response.data.data}
-    })
+  //异步调用，调用一次
+  //params: 相当于之前 this.$route.params.id  等价  params.id
+  asyncData({ params, error }) {
+    return teacherApi.getTeacherList(1,8).then(response => {
+          //this.data = response.data.data
+          return { data: response.data.data }
+       })
+  },
+  methods:{
+    //分页切换的方法
+    //参数是页码数
+    gotoPage(page) {
+      teacherApi.getTeacherList(page,8)
+        .then(response => {
+          this.data = response.data.data
+        })
+    }
   }
+
 };
 </script>
